@@ -1,0 +1,18 @@
+[project]
+name = "risk-agent"
+version = "0.1.0"
+description = "ce projet coniste en la création d\"un système de gestion de risque,plus precisement l'identification grace au GenAI"
+authors = [
+    {name = "beugre483",email = "beugreniamba904@gmail.com"}
+]
+requires-python = ">=3.11,<4.0.0"
+dependencies = [
+    "langchain (>=1.2.10,<2.0.0)",
+    "llama-index (>=0.14.14,<0.15.0)",
+    "streamlit (>=1.54.0,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

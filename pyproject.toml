@@ -1,18 +1,16 @@
-[project]
+[tool.poetry]
 name = "risk-agent"
 version = "0.1.0"
-description = "ce projet coniste en la création d\"un système de gestion de risque,plus precisement l'identification grace au GenAI"
-authors = [
-    {name = "beugre483",email = "beugreniamba904@gmail.com"}
-]
-requires-python = ">=3.11,<4.0.0"
-dependencies = [
-    "langchain (>=1.2.10,<2.0.0)",
-    "llama-index (>=0.14.14,<0.15.0)",
-    "streamlit (>=1.54.0,<2.0.0)"
-]
+description = ""
+authors = ["Your Name <you@example.com>"]
+packages = [{include = "risk_engine"}]  
 
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.poetry.dependencies]
+python = ">=3.11,<4.0"
+langchain = "^0.3.0"
+langgraph = "^0.2.0"
+pydantic = "^2.0.0"
+llama-parse = "*"
+llama-index = "*"
+python-dotenv = "*"
+nest-asyncio = "*"

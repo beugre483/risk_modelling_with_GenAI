@@ -21,7 +21,7 @@ class LlamaParseService:
         
         self.api_key = os.getenv(api_key_env)
         if not self.api_key:
-            raise ValueError(f"⚠️ {api_key_env} not found in environment variables.")
+            raise ValueError(f" {api_key_env} not found in environment variables.")
         
         # TON PROMPT COMPLET (inchangé)
         self.parsing_instruction = """
@@ -167,7 +167,7 @@ The graph shows a steady increase in internet penetration from 2015 to 2020, wit
         if text:
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(text)
-            print(f"✅ Markdown saved to {output_path}")
+            print(f" Markdown saved to {output_path}")
 
 
 _llama_parse_service = None

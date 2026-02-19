@@ -3,6 +3,7 @@ import unicodedata
 from langchain_mistralai import ChatMistralAI
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 class LLMClient:

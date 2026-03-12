@@ -39,3 +39,15 @@ class MainState(TypedDict):
     page_risks: List[Dict]  # Risques par page
     all_identified_elements: List[str] 
     all_identified_threats: List[str]  
+    
+    
+    current_aloe_page_index: int
+    page_aloe_objects: List[Dict]  # [{page_num, aloe_objects}, ...]
+    all_extracted_aloe_objects: List[str]  # Pour éviter doublons
+    
+    current_aloe_links_page_index: int
+    page_aloe_links: List[Dict]  # [{page_num, links}, ...]
+    
+    # ALOE VULNERABILITIES (nouveau)
+    current_aloe_vulnerability_page_index: int
+    page_aloe_vulnerabilities: List[Dict]  # [{page_num, vulnerabilities}, ...]

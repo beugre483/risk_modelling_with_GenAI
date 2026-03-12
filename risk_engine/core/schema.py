@@ -1,6 +1,10 @@
 # core/schemas.py
 
 from pydantic import BaseModel, Field
+from typing import List, Optional
+from typing import Literal
+
+from enum import Enum
 
 
 class SummaryOutput(BaseModel):
@@ -68,6 +72,7 @@ class RiskAnalysisOutput(BaseModel):
     )
     
     class Config:
+        use_enum_values =True
         json_schema_extra = {
             "example": {
                 "vulnerable_elements": [
@@ -87,3 +92,105 @@ class RiskAnalysisOutput(BaseModel):
             }
         }
     
+
+
+
+class ObjectCategory(str, Enum):
+    """Catégories d'objets ALOE"""
+    OBJECTIF = "Objectif"
+    ACTIVITE = "Activité/Processus"
+    ORGANISATION = "Organisation/Acteur"
+    RESSOURCE = "Ressource"
+    LIVRABLE = "Livrable/Produit"
+
+
+class AttributeName(str, Enum):
+    """Attributs ALOE"""
+    COUT = "Coût"
+    DUREE = "Durée"
+    QUALITE = "Qualité"
+    DATE = "Date"
+    AVANCEMENT = "Avancement"
+    DESCRIPTION = "Description"
+    RESSOURCES = "Ressources allouées"
+    VALEUR = "Valeur ajoutée"
+
+
+class Attribute(BaseModel):
+    """Attribut d'un objet ALOE"""
+    name: AttributeName = Field(..., description="Nom de l'attribut")
+    value: Optional[str] = Field(None, description="Valeur mentionnée (ex: '500K€', '6 mois')")
+    justification: str = Field(..., description="Citation du document")
+
+
+from pydantic import BaseModel, Field, model_validator
+from typing import Any
+
+class ALOEObject(BaseModel):
+    object_name: str = Field(..., description="Nom de l'objet (ex: 'Budget finition')")
+    category: ObjectCategory = Field(..., description="Catégorie ALOE")
+    attributes: List[Attribute] = Field(..., description="Attributs de l'objet")
+    justification: str = Field(..., description="Citation du document")
+
+    @model_validator(mode="before")
+    @classmethod
+    def normalize_field_names(cls, values: Any) -> Any:
+        if isinstance(values, dict):
+            # Rattrape toutes les variantes que le LLM peut générer
+            aliases = [
+                "objectif_name", "activite_name", "ressource_name",
+                "livrable_name", "organisation_name", "name", "nom"
+            ]
+            if "object_name" not in values or not values["object_name"]:
+                for alias in aliases:
+                    if alias in values and values[alias]:
+                        values["object_name"] = values[alias]
+                        break
+        return values
+
+
+class ALOEOutput(BaseModel):
+    """Sortie extraction ALOE"""
+    objects: List[ALOEObject] = Field(default_factory=list, description="Objets ALOE extraits")
+    
+    
+class VulnerableALOEElement(BaseModel):
+    """Élément vulnérable ALOE identifié"""
+    aloe_object_name: str = Field(..., description="Nom de l'objet ALOE vulnérable")
+    vulnerable_attribute: str = Field(..., description="Attribut ALOE vulnérable")
+    threat: str = Field(..., description="Menace identifiée")
+    propagation_path: Optional[str] = Field(
+        None,
+        description="Chemin de propagation via les liens (ex: 'Objet1 → Objet2 (Séquentiel)')"
+    )
+    justification: str = Field(..., description="Justification de la vulnérabilité")
+
+
+class ALOEVulnerabilityOutput(BaseModel):
+    """Sortie : vulnérabilités ALOE"""
+    vulnerable_elements: List[VulnerableALOEElement] = Field(
+        default_factory=list,
+        description="Éléments vulnérables identifiés"
+    )
+    
+    class Config:
+        use_enum_values = True
+        
+        
+class ALOELink(BaseModel):
+    """Lien entre deux objets ALOE"""
+    link_type: Literal["Contribution", "Séquentiel", "Influence", "Échange"] = Field(
+        ...,
+        description="Type de lien entre les objets"
+    )
+    object_1: str = Field(..., description="Nom du premier objet ALOE")
+    object_2: str = Field(..., description="Nom du second objet ALOE")
+    justification: str = Field(..., description="Explication du lien basée sur le contexte")
+
+
+class ALOELinksOutput(BaseModel):
+    """Sortie : liens entre objets ALOE"""
+    links: List[ALOELink] = Field(default_factory=list, description="Liens identifiés")
+    
+    class Config:
+        use_enum_values = True

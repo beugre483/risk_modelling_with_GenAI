@@ -1,5 +1,6 @@
 # nodes/summarization.py
 
+import time
 from ..core.state import MainState
 from ..core.schema import SummaryOutput
 from ..services.llm_client import get_llm
@@ -74,6 +75,7 @@ PRINCIPES:
 - Sois factuel: base-toi uniquement sur ce qui est écrit
 - Sois exhaustif: ne perds aucune information
 - Sois neutre: pas d'interprétation
+-C'est resumé qu'il ne soit pas gigantesque qu'il soit compacte
 
 SORTIE ATTENDUE:
 JSON valide uniquement:
@@ -83,9 +85,31 @@ JSON valide uniquement:
 }}
 """
     
-    # Utilise invoke_structured avec le schéma Pydantic
-    summaries = llm.invoke_structured(prompt, SummaryOutput)
+    # --- LOGIQUE DE RÉESSAI (RETRY) ---
+    max_retries = 3
+    retry_delay = 5  # secondes initiales
+    summaries = None
     
+    for attempt in range(max_retries):
+        try:
+            # Petite pause préventive pour éviter le Rate Limit
+            time.sleep(2) 
+            
+            # Utilise invoke_structured avec le schéma Pydantic
+            summaries = llm.invoke_structured(prompt, SummaryOutput)
+            break # Si succès, on sort de la boucle
+            
+        except Exception as e:
+            print(f"⚠️ Erreur LLM (Tentative {attempt + 1}/{max_retries}) : {e}")
+            if attempt < max_retries - 1:
+                print(f"⏳ Attente de {retry_delay}s avant réessai...")
+                time.sleep(retry_delay)
+                retry_delay *= 2  # Exponential backoff (5s -> 10s -> 20s)
+            else:
+                # Si c'est la dernière tentative, on remonte l'erreur ou on gère un échec gracieux
+                print("❌ Échec définitif de l'appel LLM pour cette page.")
+                raise e
+
     # Sauvegarde le résumé de la page
     new_page_summary = {
         "page_num": current_page["page_num"],

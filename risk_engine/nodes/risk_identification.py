@@ -1,3 +1,6 @@
+# nodes/risk_identification.py
+
+import time
 from ..core.state import MainState
 from ..core.schema import RiskAnalysisOutput
 from ..services.llm_client import get_llm
@@ -37,7 +40,6 @@ DEFINITIONS FONDAMENTALES (à appliquer strictement) :
 
 - CONSEQUENCE : l'impact que cela aurait sur les objectifs du projet (délai, coût, qualité).
 
-- RISQUE : une formulation logique complète qui relie un élément vulnérable, une menace précise, et un impact.
 
 CONTEXTE DE TRAVAIL - Analyse page par page :
 
@@ -90,7 +92,7 @@ ETAPE 1 - Identifier les éléments vulnérables présents dans la page
 - Exclus les concepts vagues comme "le projet", "la qualité", "les risques techniques".
 
 Format attendu :
-- Élément vulnérable : [nom synthétique]
+- Élément vulnérable : [nom]
   Justification : [extrait ou paraphrase du document + explication du pourquoi cet élément est fragile]
 
 Exemple :
@@ -125,10 +127,38 @@ Souviens-toi : tu travailles page par page, en évitant les redites, et en const
 REPONSE ATTENDUE :
 Format JSON uniquement, sans texte avant ou après.
 Respecte le schéma RiskAnalysisOutput.
+Élément vulnérable : Planification tardive des autorisations administratives
+Justification : Le document indique que « les demandes de permis de construire ont été déposées 3 mois après le démarrage de la phase de fondations » → le décalage entre mise en chantier et obtention des autorisations expose le projet à un arrêt des travaux si les délais réglementaires ne sont pas respectés.
+
+Élément vulnérable : Budget de finition trop serré
+Justification : « Le budget alloué aux finitions (peintures, revêtements de sol, équipements sportifs) représente seulement 5 % du coût total du projet » → cette marge réduite limite la flexibilité en cas de hausse des prix ou d’ajout de spécifications.
+
+Élément vulnérable : Dépendance à un unique fournisseur de structure métallique
+Justification : « Le prestataire X détient l’exclusivité de la charpente en acier » → toute défaillance ou retard de ce fournisseur bloque l’avancement des gros-œuvre.
+
 """
     
-    risks = llm.invoke_structured(prompt, RiskAnalysisOutput)
+    max_retries = 3
+    retry_delay = 8  # secondes initiales
+    risks = None
     
+    for attempt in range(max_retries):
+        try:
+            time.sleep(2)
+            
+            risks = llm.invoke_structured(prompt, RiskAnalysisOutput)
+            break # Succès
+            
+        except Exception as e:
+            print(f" Erreur LLM Risques (Tentative {attempt + 1}/{max_retries}) : {e}")
+            if attempt < max_retries - 1:
+                print(f" Attente de {retry_delay}s avant réessai...")
+                time.sleep(retry_delay)
+                retry_delay *= 2 # Backoff exponentiel
+            else:
+                print(" Échec définitif de l'analyse des risques pour cette page.")
+                raise e
+
     new_elements = [ve.element for ve in risks.vulnerable_elements]
     
     page_risk_entry = {

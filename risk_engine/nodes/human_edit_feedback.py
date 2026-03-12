@@ -3,7 +3,7 @@
 from langgraph.types import interrupt
 from ..core.state import MainState
 from typing import Dict
-
+import json
 
 def edit_decision_node(state: MainState) -> Dict:
     """
@@ -49,6 +49,7 @@ def llm_edit_instruction_node(state: MainState) -> Dict:
     Pause pour que l'utilisateur donne une instruction au LLM
     """
     instruction = interrupt("Quelle modification Voulez-vous  que l'IA fasse sur les documents générés ?")
+    instruction = json.loads(instruction)
     
     # Streamlit retournera:
     # {

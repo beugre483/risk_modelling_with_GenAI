@@ -1,7 +1,6 @@
 # graphs/main_graph.py
 
-from langgraph.graph import StateGraph
-from langgraph.constants import END
+from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 from ..core.state import MainState
 from ..nodes.extraction import upload_document_node, extract_document_node

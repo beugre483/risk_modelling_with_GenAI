@@ -27,6 +27,7 @@ matplotlib = "^3.10.8"
 langchain-mistralai = "^1.1.1"
 pytest = "^9.0.2"
 pydantic = ">=2.7,<3"
+markdown = "^3.10.2"
 
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.0"

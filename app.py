@@ -5,6 +5,7 @@ import os
 
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
+sys.path.append(str(Path(__file__).parent))
 
 from risk_engine.graphs.main_graph import create_main_graph
 from risk_engine.core.state import MainState
